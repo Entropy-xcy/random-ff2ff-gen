@@ -11,46 +11,30 @@ Detailed Specifications about IR Cells can be found in `Yosys Basic Cells Table.
 * $or
 * $xor
 * $logic_not
-* $shl
-* $shr
-* $sshl
-* $sshr
 
 Total: 10 encodings
 
 ### Width Dependent Cells
 * $reduce_and
-    * 4, 8, 16, 32, 64
 * $reduce_or
-    * 4, 8, 16, 32, 64
 * $reduce_xor
-    * 4, 8, 16, 32, 64
 * $lt 
-    * 8, 16, 32, 64
 * $le
-    * 8, 16, 32, 64
 * $eq 
-    * 8, 16, 32, 64
 * $ne 
-    * 8, 16, 32, 64
 * $ge 
-    * 8, 16, 32, 64
 * $gt 
-    * 8, 16, 32, 64
 * $add 
-    * 8, 16, 32, 64
 * $sub 
-    * 8, 16, 32, 64
 * $mul 
-    * 8, 16, 32, 64
 * $div 
-    * 8, 16, 32, 64
 * $mod 
-    * 8, 16, 32, 64
 * $memrd 
-    * 32, 64
 * $memwr
-    * 32, 64
+* $shl
+* $shr
+* $sshl
+* $sshr
 
 Total: 63
 
@@ -65,29 +49,19 @@ Total: 63
 * $sh
     * $shl, $shr, $sshl, $sshr
 * $reduce_and
-    * 4, 8, 16, 32, 64
 * $reduce_or
-    * 4, 8, 16, 32, 64
 * $reduce_xor
-    * 4, 8, 16, 32, 64
 * $eq
     * $eq, $ne
-        * 8, 16, 32, 64
 * $lgt
     * $lt, $le, $ge, $gt
-        * 8, 16, 32, 64
 * $add
     * $add, $sub
-        * 8, 16, 32, 64
 * $mul 
-    * 8, 16, 32, 64
 * $div 
-    * 8, 16, 32, 64
 * $mod 
-    * 8, 16, 32, 64
-* $mem
-    * $memrd, $memwr
-        * 32, 64
+* $memrd
+* $memwr
 
 Total Encodings: 47
 
@@ -97,7 +71,7 @@ Total Encodings: 47
 * $and
 * $or
 * $xor
-* $sh
+* $sh:[4, 8, 16, 32, 64]
 * $reduce_and:[4, 8, 16, 32, 64]
 * $reduce_or:[4, 8, 16, 32, 64]
 * $reduce_xor:[4, 8, 16, 32, 64]
@@ -107,4 +81,5 @@ Total Encodings: 47
 * $mul:[8, 16, 32, 64]
 * $div:[8, 16, 32, 64]
 * $mod:[8, 16, 32, 64]
-* $mem:[32, 64]
+* $memrd:[32, 64]
+* $memwr:[32, 64]

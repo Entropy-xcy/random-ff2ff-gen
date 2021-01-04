@@ -13,7 +13,7 @@ class RandomPath(sequence: Array[(String, Int, Int)]) extends Module {
   val io = IO(new Bundle {
     val in          = Input(Bits(max_width.W))
     val level_in_b  = Input(Vec(sequence.size, Bits(max_width.W)))
-    val level_in_s  = Input(Vec(sequence.size, Bits(1.W)))
+    val level_in_s  = Input(Vec(sequence.size, Bool()))
     val out         = Output(Bits(max_width.W))
   })
 
@@ -29,9 +29,11 @@ class RandomPath(sequence: Array[(String, Int, Int)]) extends Module {
     // Define Cell Ports
     val cell_in_a = Wire(Bits(in_width.W)) // a is from last layer
     val cell_in_b = Wire(Bits(in_width.W))
-    val cell_in_s = Wire(Bits(1.W))
+    val cell_in_s = Wire(Bool())
     val cell_out = Wire(Bits(out_width.W))
     val last_layer_out = Wire(Bits(max_width.W))
+
+    val mem_secs: Int = scala.math.pow(2, in_width).toInt
 
     // Prepare Cell Inputs
     if(i == 0){
@@ -47,9 +49,77 @@ class RandomPath(sequence: Array[(String, Int, Int)]) extends Module {
     // Apply Cell Functionality
     if(cell_type == "add"){
       cell_out := cell_in_a + cell_in_b
+    } else if(cell_type == "sub")
+    {
+      cell_out := cell_in_a - cell_in_b
     } else if(cell_type == "mul")
     {
       cell_out := cell_in_a * cell_in_b
+    } else if(cell_type == "mux")
+    {
+      cell_out := Mux(cell_in_s, cell_in_a, cell_in_b)
+    } else if(cell_type == "not")
+    {
+      cell_out := ~cell_in_a
+    } else if(cell_type == "and")
+    {
+      cell_out := cell_in_a & cell_in_b
+    } else if(cell_type == "or")
+    {
+      cell_out := cell_in_a | cell_in_b
+    } else if(cell_type == "xor")
+    {
+      cell_out := cell_in_a ^ cell_in_b
+    } else if(cell_type == "shl")
+    {
+      cell_out := cell_in_a << cell_in_b
+    } else if(cell_type == "shr")
+    {
+      cell_out := cell_in_a >> cell_in_b
+    } else if(cell_type == "reduce_and")
+    {
+      cell_out := cell_in_a.andR
+    } else if(cell_type == "reduce_or")
+    {
+      cell_out := cell_in_a.orR
+    } else if(cell_type == "reduce_xor")
+    {
+      cell_out := cell_in_a.xorR
+    } else if(cell_type == "eq")
+    {
+      cell_out(0) := cell_in_a === cell_in_b
+    } else if(cell_type == "neq")
+    {
+      cell_out(0) := cell_in_a =/= cell_in_b
+    } else if(cell_type == "le")
+    {
+      cell_out(0) := cell_in_a <= cell_in_b
+    } else if(cell_type == "lt")
+    {
+      cell_out(0) := cell_in_a < cell_in_b
+    } else if(cell_type == "ge")
+    {
+      cell_out(0) := cell_in_a >= cell_in_b
+    } else if(cell_type == "gt")
+    {
+      cell_out(0) := cell_in_a > cell_in_b
+    } else if(cell_type == "div")
+    {
+      cell_out(0) := cell_in_a / cell_in_b
+    } else if(cell_type == "mod")
+    {
+      cell_out(0) := cell_in_a % cell_in_b
+    } else if(cell_type == "memrd")
+    {
+      val mem = SyncReadMem(mem_secs, Bits(max_width.W))
+      val rdPort = mem(cell_in_a)
+      cell_out := rdPort
+    } else if(cell_type == "memwr")
+    {
+      val mem = SyncReadMem(mem_secs, Bits(max_width.W))
+      val wrPort = mem(cell_in_a)
+      wrPort := cell_out
+      cell_out := cell_in_a
     }
     
     // Write Back Results to Level out
