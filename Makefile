@@ -13,6 +13,7 @@ AutoRandomModule: clean_seq
 
 clean:
 	rm -rf test_run_dir
+	rm -rf build
 
 clean_seq:
 	rm -f sequence.txt
