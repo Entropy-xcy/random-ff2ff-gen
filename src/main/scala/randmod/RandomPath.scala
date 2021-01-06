@@ -29,6 +29,7 @@ class RandomPath(sequence: Array[(String, Int, Int)]) extends Module {
     // Define Cell Ports
     val cell_in_a = Wire(Bits(in_width.W)) // a is from last layer
     val cell_in_b = Wire(Bits(in_width.W))
+    val cell_in_sh = Wire(Bits(8.W))
     val cell_in_s = Wire(Bool())
     val cell_out = Wire(Bits(out_width.W))
     val last_layer_out = Wire(Bits(max_width.W))
@@ -45,6 +46,7 @@ class RandomPath(sequence: Array[(String, Int, Int)]) extends Module {
     cell_in_a := last_layer_out(in_width - 1, 0)
     cell_in_b := io.level_in_b(i)(in_width - 1, 0)
     cell_in_s := io.level_in_s(i)
+    cell_in_sh := cell_in_b
 
     // Apply Cell Functionality
     if(cell_type == "add"){
@@ -72,10 +74,10 @@ class RandomPath(sequence: Array[(String, Int, Int)]) extends Module {
       cell_out := cell_in_a ^ cell_in_b
     } else if(cell_type == "shl")
     {
-      cell_out := cell_in_a << cell_in_b
+      cell_out := cell_in_a << cell_in_sh
     } else if(cell_type == "shr")
     {
-      cell_out := cell_in_a >> cell_in_b
+      cell_out := cell_in_a >> cell_in_sh
     } else if(cell_type == "reduce_and")
     {
       cell_out := cell_in_a.andR
@@ -87,43 +89,32 @@ class RandomPath(sequence: Array[(String, Int, Int)]) extends Module {
       cell_out := cell_in_a.xorR
     } else if(cell_type == "eq")
     {
-      cell_out(0) := cell_in_a === cell_in_b
-    } else if(cell_type == "neq")
+      cell_out := Cat(cell_in_a(out_width-1, 1), cell_in_a === cell_in_b)
+    } else if(cell_type == "ne")
     {
-      cell_out(0) := cell_in_a =/= cell_in_b
+      cell_out := Cat(cell_in_a(out_width-1, 1), cell_in_a =/= cell_in_b)
     } else if(cell_type == "le")
     {
-      cell_out(0) := cell_in_a <= cell_in_b
+      cell_out := Cat(cell_in_a(out_width-1, 1), cell_in_a <= cell_in_b)
     } else if(cell_type == "lt")
     {
-      cell_out(0) := cell_in_a < cell_in_b
+      cell_out := Cat(cell_in_a(out_width-1, 1), cell_in_a < cell_in_b)
     } else if(cell_type == "ge")
     {
-      cell_out(0) := cell_in_a >= cell_in_b
+      cell_out := Cat(cell_in_a(out_width-1, 1), cell_in_a >= cell_in_b)
     } else if(cell_type == "gt")
     {
-      cell_out(0) := cell_in_a > cell_in_b
+      cell_out := Cat(cell_in_a(out_width-1, 1), cell_in_a > cell_in_b)
     } else if(cell_type == "div")
     {
-      cell_out(0) := cell_in_a / cell_in_b
+      cell_out := cell_in_a / cell_in_b
     } else if(cell_type == "mod")
     {
-      cell_out(0) := cell_in_a % cell_in_b
-    } else if(cell_type == "memrd")
-    {
-      val mem = SyncReadMem(mem_secs, Bits(max_width.W))
-      val rdPort = mem(cell_in_a)
-      cell_out := rdPort
-    } else if(cell_type == "memwr")
-    {
-      val mem = SyncReadMem(mem_secs, Bits(max_width.W))
-      val wrPort = mem(cell_in_a)
-      wrPort := cell_out
-      cell_out := cell_in_a
-    }
+      cell_out := cell_in_a % cell_in_b
+    } 
     
     // Write Back Results to Level out
-    level_out(i) := Cat(last_layer_out(max_width - 1, out_width), cell_out)
+    level_out(i) := Cat(last_layer_out(max_width - 1, out_width - 1), cell_out)
   }
 
   io.out := level_out(layer_height - 1)
@@ -135,7 +126,8 @@ class RandomPathPeekPokeTester(c: RandomPath) extends PeekPokeTester(c)  {
 
 object RandomPathTest extends App{
   // (cell_type, input_width, output_width)
-  val sequence = Array(("add", 8, 8), ("mul", 16, 32), ("add", 32, 32))
+  val sequence = Array(("add", 8, 8))
+    println(sequence)
     chisel3.iotesters.Driver.execute(Array("--backend-name", "verilator"), () => new RandomPath(sequence)) 
     { c =>
       new RandomPathPeekPokeTester(c)
